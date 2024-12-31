@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion Praticien{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Connexion Praticien</h2>
+
+            {# Affichage des messages flash #}
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded {% if label == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <form method="post">
+                {% if error %}
+                    <div class="mb-4 p-4 rounded bg-red-100 text-red-700">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="email" name="_username" value="{{ last_username }}" required autofocus
+                           class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="password" name="_password" required
+                               class="w-full p-2 pr-10 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                        <div class="toggle-password">
+                            <i class="fa-regular fa-eye-slash text-gray-500"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors">
+                    Se connecter
+                </button>
+            </form>
+
+            <p class="mt-4 text-center text-sm text-gray-600">
+                Pas encore de compte ? <a href="{{ path('practitioner_register') }}" class="text-blue-600 hover:text-blue-700">Inscrivez-vous</a>
+            </p>
+        </div>
+    </div>
+
+    <style>
+        .password-field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .password-field-wrapper input {
+            width: 100%;
+            padding-right: 2.5rem !important;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password visibility
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const input = this.parentElement.querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

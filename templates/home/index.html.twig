@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}OrthoSmart - Accueil{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen flex flex-col bg-white">
+        <!-- Navigation -->
+        <nav class="bg-[#00487C] p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <a href="/" class="text-white text-xl font-bold">OrthoSmart</a>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-white px-4 py-2">Espace Patient</a>
+                    <a href="{{ path('practitioner_login') }}" class="bg-white text-[#00487C] px-4 py-2 rounded">Espace Praticien</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <main class="flex-grow flex flex-col items-center">
+            <div class="bg-[#00487C] text-white py-20 w-full">
+                <div class="max-w-4xl mx-auto text-center px-4">
+                    <h1 class="text-4xl font-bold mb-6">Bienvenue sur OrthoSmart</h1>
+                    <p class="text-xl mb-8">
+                        La plateforme innovante pour les orthophonistes et leurs patients. Simplifiez la gestion de vos tests et suivis thérapeutiques.
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#" class="bg-[#4BB3FD] text-white px-8 py-3 rounded">Espace Patient</a>
+                        <a href="{{ path('practitioner_login') }}" class="bg-white text-[#00487C] px-8 py-3 rounded">Espace Praticien</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <section class="py-16 px-4 bg-white w-full">
+                <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-around gap-8">
+                    <div class="p-8 border rounded flex-1">
+                        <h3 class="text-[#00487C] text-xl font-bold mb-4">Pour les Praticiens</h3>
+                        <p class="text-gray-600">Gérez vos patients, envoyez des tests et suivez leurs progrès facilement.</p>
+                    </div>
+                    <div class="p-8 border rounded flex-1">
+                        <h3 class="text-[#00487C] text-xl font-bold mb-4">Pour les Patients</h3>
+                        <p class="text-gray-600">Accédez à vos tests et résultats dans un espace personnel sécurisé.</p>
+                    </div>
+                    <div class="p-8 border rounded flex-1">
+                        <h3 class="text-[#00487C] text-xl font-bold mb-4">Suivi Simplifié</h3>
+                        <p class="text-gray-600">Visualisez les progrès et exportez les résultats en quelques clics.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How it works Section -->
+            <section class="py-16 bg-gray-100 w-full">
+                <div class="max-w-7xl mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-[#00487C] text-center mb-12">Comment ça marche ?</h2>
+                    <div class="flex flex-col md:flex-row justify-around gap-8">
+                        <div class="text-center flex-1">
+                            <div class="w-16 h-16 bg-[#00487C] rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">1</div>
+                            <h3 class="text-[#00487C] font-bold mb-2">Inscription</h3>
+                            <p class="text-gray-600">Créez votre compte praticien en quelques clics</p>
+                        </div>
+                        <div class="text-center flex-1">
+                            <div class="w-16 h-16 bg-[#00487C] rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">2</div>
+                            <h3 class="text-[#00487C] font-bold mb-2">Configuration</h3>
+                            <p class="text-gray-600">Personnalisez votre espace et ajoutez vos patients</p>
+                        </div>
+                        <div class="text-center flex-1">
+                            <div class="w-16 h-16 bg-[#00487C] rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">3</div>
+                            <h3 class="text-[#00487C] font-bold mb-2">Envoi des tests</h3>
+                            <p class="text-gray-600">Envoyez facilement des tests à vos patients</p>
+                        </div>
+                        <div class="text-center flex-1">
+                            <div class="w-16 h-16 bg-[#00487C] rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">4</div>
+                            <h3 class="text-[#00487C] font-bold mb-2">Suivi</h3>
+                            <p class="text-gray-600">Analysez les résultats et suivez les progrès</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonials Section -->
+            <section class="py-16 bg-white w-full">
+                <div class="max-w-7xl mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-[#00487C] text-center mb-12">Ils nous font confiance</h2>
+                    <div class="flex flex-col md:flex-row justify-around gap-8">
+                        <div class="p-6 border rounded flex-1">
+                            <p class="text-gray-600 mb-4">"Une plateforme qui a révolutionné ma pratique. Mes patients apprécient la simplicité d'utilisation."</p>
+                            <p class="font-bold text-[#00487C]">Dr. Sophie Martin</p>
+                            <p class="text-gray-600">Orthophoniste à Paris</p>
+                        </div>
+                        <div class="p-6 border rounded flex-1">
+                            <p class="text-gray-600 mb-4">"Le suivi des progrès est devenu tellement plus simple. Je recommande vivement !"</p>
+                            <p class="font-bold text-[#00487C]">Dr. Thomas Bernard</p>
+                            <p class="text-gray-600">Orthophoniste à Lyon</p>
+                        </div>
+                        <div class="p-6 border rounded flex-1">
+                            <p class="text-gray-600 mb-4">"Un gain de temps considérable dans la gestion administrative. Merci OrthoSmart !"</p>
+                            <p class="font-bold text-[#00487C]">Dr. Marie Dubois</p>
+                            <p class="text-gray-600">Orthophoniste à Bordeaux</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-[#00487C] py-8 w-full">
+            <div class="max-w-7xl mx-auto px-4 text-center text-white">
+                <p>&copy; 2024 OrthoSmart. Tous droits réservés.</p>
+            </div>
+        </footer>
+    </div>
+{% endblock %}

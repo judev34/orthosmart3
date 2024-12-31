@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription Praticien{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Inscription Praticien</h2>
+            
+            {{ form_start(registrationForm) }}
+                <div class="mb-4">
+                    {{ form_label(registrationForm.email) }}
+                    {{ form_widget(registrationForm.email) }}
+                    {% if not registrationForm.email.vars.valid %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {{ form_errors(registrationForm.email) }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    {{ form_label(registrationForm.password.first) }}
+                    <div class="password-field-wrapper">
+                        {{ form_widget(registrationForm.password.first) }}
+                        <div class="toggle-password">
+                            <i class="fa-regular fa-eye-slash text-gray-500"></i>
+                        </div>
+                    </div>
+                    {% if not registrationForm.password.first.vars.valid %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {{ form_errors(registrationForm.password.first) }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    {{ form_label(registrationForm.password.second) }}
+                    <div class="password-field-wrapper">
+                        {{ form_widget(registrationForm.password.second) }}
+                        <div class="toggle-password">
+                            <i class="fa-regular fa-eye-slash text-gray-500"></i>
+                        </div>
+                    </div>
+                    {% if not registrationForm.password.second.vars.valid %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {{ form_errors(registrationForm.password.second) }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors">
+                    S'inscrire
+                </button>
+            {{ form_end(registrationForm) }}
+
+            <p class="mt-4 text-center text-sm text-gray-600">
+                Déjà inscrit ? <a href="{{ path('practitioner_login') }}" class="text-blue-600 hover:text-blue-700">Connectez-vous</a>
+            </p>
+        </div>
+    </div>
+
+    <style>
+        .password-field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .password-field-wrapper input {
+            width: 100%;
+            padding-right: 2.5rem !important;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .text-red-600 {
+            color: #e3342f;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password visibility
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const input = this.parentElement.querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
