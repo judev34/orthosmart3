@@ -1,4 +1,5 @@
 import './bootstrap.js';
+import '@fortawesome/fontawesome-free/css/all.css';
 /*
  * Welcome to your app's main JavaScript file!
  *
