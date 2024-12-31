@@ -86,6 +86,7 @@
             const mainContent = document.getElementById('mainContent');
             const overlay = document.getElementById('overlay');
             let isSidebarOpen = true;
+            let isMobile = window.innerWidth < 768;
 
             function toggleSidebar() {
                 isSidebarOpen = !isSidebarOpen;
@@ -94,10 +95,19 @@
                     sidebar.classList.remove('translate-x-0');
                     sidebar.classList.add('-translate-x-full');
                     overlay.classList.add('hidden');
+                    if (!isMobile) {
+                        mainContent.classList.remove('md:ml-64');
+                        mainContent.classList.add('md:ml-0');
+                    }
                 } else {
                     sidebar.classList.remove('-translate-x-full');
                     sidebar.classList.add('translate-x-0');
-                    overlay.classList.remove('hidden');
+                    if (!isMobile) {
+                        mainContent.classList.remove('md:ml-0');
+                        mainContent.classList.add('md:ml-64');
+                    } else {
+                        overlay.classList.remove('hidden');
+                    }
                 }
             }
 
@@ -106,16 +116,26 @@
 
             // Gestion responsive pour mobile
             function checkScreenSize() {
-                if (window.innerWidth < 768) {
+                isMobile = window.innerWidth < 768;
+                
+                if (isMobile) {
                     sidebar.classList.remove('translate-x-0');
                     sidebar.classList.add('-translate-x-full');
                     overlay.classList.add('hidden');
+                    mainContent.classList.remove('md:ml-0');
+                    mainContent.classList.add('md:ml-64');
                     isSidebarOpen = false;
                 } else {
                     sidebar.classList.remove('-translate-x-full');
                     sidebar.classList.add('translate-x-0');
                     overlay.classList.add('hidden');
-                    isSidebarOpen = true;
+                    if (isSidebarOpen) {
+                        mainContent.classList.remove('md:ml-0');
+                        mainContent.classList.add('md:ml-64');
+                    } else {
+                        mainContent.classList.remove('md:ml-64');
+                        mainContent.classList.add('md:ml-0');
+                    }
                 }
             }
 
