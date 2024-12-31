@@ -1,0 +1,30 @@
+{# templates/components/patients.html.twig #}
+<div>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800">Mes Patients</h2>
+        <button 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+            data-action="live#action"
+            data-action-name="toggleForm"
+        >
+            <i class="fas fa-plus"></i>
+            <span>Nouveau Patient</span>
+        </button>
+    </div>
+
+    {% if this.showForm %}
+        <div class="mb-6">
+            {{ component('patient_form') }}
+        </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for patient in this.patients %}
+            {{ component('patient_card', { patient: patient }) }}
+        {% else %}
+            <div class="col-span-full text-center py-8 bg-gray-50 rounded-lg">
+                <p class="text-gray-600">Aucun patient pour le moment</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>

@@ -27,53 +27,8 @@
         <!-- Overlay pour mobile -->
         <div id="overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden md:hidden"></div>
 
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed left-0 top-0 z-40 h-screen w-64 pt-16 transition-transform bg-white border-r border-gray-200 transform translate-x-0">
-            <div class="h-full px-3 py-4 overflow-y-auto">
-                <ul class="space-y-2">
-                    <li>
-                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-                            <i class="fas fa-home w-6"></i>
-                            <span class="ml-3">Accueil</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-                            <i class="fas fa-calendar-alt w-6"></i>
-                            <span class="ml-3">Rendez-vous</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-                            <i class="fas fa-users w-6"></i>
-                            <span class="ml-3">Patients</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-                            <i class="fas fa-chart-line w-6"></i>
-                            <span class="ml-3">Statistiques</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-                            <i class="fas fa-cog w-6"></i>
-                            <span class="ml-3">Paramètres</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main id="mainContent" class="pt-16 md:ml-64 min-h-screen transition-all duration-300">
-            <div class="p-4">
-                <div class="p-4 bg-white rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Bienvenue sur votre dashboard</h2>
-                    <p>Contenu principal ici...</p>
-                </div>
-            </div>
-        </main>
+        <!-- Dashboard Component -->
+        {{ component('dashboard') }}
     </div>
 {% endblock %}
 
@@ -86,7 +41,14 @@
             const mainContent = document.getElementById('mainContent');
             const overlay = document.getElementById('overlay');
             let isSidebarOpen = true;
-            let isMobile = window.innerWidth < 768;
+
+            function updateMainContentMargin() {
+                if (window.innerWidth >= 768) {
+                    mainContent.style.marginLeft = isSidebarOpen ? '16rem' : '0';
+                } else {
+                    mainContent.style.marginLeft = '0';
+                }
+            }
 
             function toggleSidebar() {
                 isSidebarOpen = !isSidebarOpen;
@@ -95,20 +57,14 @@
                     sidebar.classList.remove('translate-x-0');
                     sidebar.classList.add('-translate-x-full');
                     overlay.classList.add('hidden');
-                    if (!isMobile) {
-                        mainContent.classList.remove('md:ml-64');
-                        mainContent.classList.add('md:ml-0');
-                    }
                 } else {
                     sidebar.classList.remove('-translate-x-full');
                     sidebar.classList.add('translate-x-0');
-                    if (!isMobile) {
-                        mainContent.classList.remove('md:ml-0');
-                        mainContent.classList.add('md:ml-64');
-                    } else {
+                    if (window.innerWidth < 768) {
                         overlay.classList.remove('hidden');
                     }
                 }
+                updateMainContentMargin();
             }
 
             menuToggle.addEventListener('click', toggleSidebar);
@@ -116,27 +72,18 @@
 
             // Gestion responsive pour mobile
             function checkScreenSize() {
-                isMobile = window.innerWidth < 768;
-                
-                if (isMobile) {
+                if (window.innerWidth < 768) {
                     sidebar.classList.remove('translate-x-0');
                     sidebar.classList.add('-translate-x-full');
                     overlay.classList.add('hidden');
-                    mainContent.classList.remove('md:ml-0');
-                    mainContent.classList.add('md:ml-64');
                     isSidebarOpen = false;
                 } else {
                     sidebar.classList.remove('-translate-x-full');
                     sidebar.classList.add('translate-x-0');
                     overlay.classList.add('hidden');
-                    if (isSidebarOpen) {
-                        mainContent.classList.remove('md:ml-0');
-                        mainContent.classList.add('md:ml-64');
-                    } else {
-                        mainContent.classList.remove('md:ml-64');
-                        mainContent.classList.add('md:ml-0');
-                    }
+                    isSidebarOpen = true;
                 }
+                updateMainContentMargin();
             }
 
             // Vérifier la taille de l'écran au chargement et au redimensionnement
