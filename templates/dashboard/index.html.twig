@@ -3,9 +3,125 @@
 {% block title %}Dashboard Praticien{% endblock %}
 
 {% block body %}
-    
+    <div class="min-h-screen bg-gray-100">
+        <!-- Header -->
+        <header class="bg-white shadow-sm fixed w-full top-0 z-50">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center">
+                    <button id="menuToggle" class="text-gray-500 hover:text-gray-600 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="ml-4 text-xl font-semibold text-gray-800">Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-gray-600">
+                        <i class="fas fa-bell text-xl"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-gray-600">
+                        <i class="fas fa-user-circle text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Overlay pour mobile -->
+        <div id="overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden md:hidden"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed left-0 top-0 z-40 h-screen w-64 pt-16 transition-transform bg-white border-r border-gray-200 transform translate-x-0">
+            <div class="h-full px-3 py-4 overflow-y-auto">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-home w-6"></i>
+                            <span class="ml-3">Accueil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-calendar-alt w-6"></i>
+                            <span class="ml-3">Rendez-vous</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-users w-6"></i>
+                            <span class="ml-3">Patients</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-chart-line w-6"></i>
+                            <span class="ml-3">Statistiques</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-cog w-6"></i>
+                            <span class="ml-3">Paramètres</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main id="mainContent" class="pt-16 md:ml-64 min-h-screen transition-all duration-300">
+            <div class="p-4">
+                <div class="p-4 bg-white rounded-lg shadow-sm">
+                    <h2 class="text-xl font-semibold mb-4">Bienvenue sur votre dashboard</h2>
+                    <p>Contenu principal ici...</p>
+                </div>
+            </div>
+        </main>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const overlay = document.getElementById('overlay');
+            let isSidebarOpen = true;
+
+            function toggleSidebar() {
+                isSidebarOpen = !isSidebarOpen;
+                
+                if (!isSidebarOpen) {
+                    sidebar.classList.remove('translate-x-0');
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                    overlay.classList.remove('hidden');
+                }
+            }
+
+            menuToggle.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+
+            // Gestion responsive pour mobile
+            function checkScreenSize() {
+                if (window.innerWidth < 768) {
+                    sidebar.classList.remove('translate-x-0');
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                    isSidebarOpen = false;
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                    overlay.classList.add('hidden');
+                    isSidebarOpen = true;
+                }
+            }
+
+            // Vérifier la taille de l'écran au chargement et au redimensionnement
+            window.addEventListener('resize', checkScreenSize);
+            checkScreenSize();
+        });
+    </script>
 {% endblock %}
