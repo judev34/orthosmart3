@@ -1,0 +1,16 @@
+{% extends 'dashboard/base.html.twig' %}
+
+{% block title %}Dashboard Praticien{% endblock %}
+
+{% block dashboard_content %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Patients</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ app.user.patients|length }}</p>
+            <a href="{{ path('practitioner_patients_index') }}" class="text-blue-500 hover:text-blue-700 text-sm mt-2 inline-block">
+                Voir tous les patients →
+            </a>
+        </div>
+        <!-- Ajoutez d'autres widgets ici -->
+    </div>
+{% endblock %}
