@@ -1,12 +1,16 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="min-h-screen bg-gray-100">
+    <div data-controller="sidebar" 
+         data-sidebar-open-value="true"
+         class="min-h-screen bg-gray-100">
+        
         <!-- Header -->
         <header class="bg-white shadow-sm fixed w-full top-0 z-50">
             <div class="flex items-center justify-between px-4 py-3">
                 <div class="flex items-center">
-                    <button id="menuToggle" class="text-gray-500 hover:text-gray-600 focus:outline-none">
+                    <button data-action="sidebar#toggle"
+                            class="text-gray-500 hover:text-gray-600 focus:outline-none">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                     <h1 class="ml-4 text-xl font-semibold text-gray-800">Dashboard</h1>
@@ -29,11 +33,14 @@
             </div>
         </header>
 
-        <!-- Overlay pour mobile -->
-        <div id="overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden md:hidden"></div>
+        <!-- Overlay -->
+        <div data-sidebar-target="overlay"
+             data-action="click->sidebar#closeOnOverlayClick"
+             class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden"></div>
 
         <!-- Sidebar -->
-        <aside id="sidebar" class="fixed left-0 top-0 z-40 h-screen w-64 pt-16 transition-transform bg-white border-r border-gray-200 transform translate-x-0">
+        <aside data-sidebar-target="sidebar"
+               class="fixed left-0 top-0 z-40 h-screen w-64 pt-16 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out">
             <div class="h-full px-3 py-4 overflow-y-auto">
                 <ul class="space-y-2">
                     <li>
@@ -55,7 +62,8 @@
         </aside>
 
         <!-- Main Content -->
-        <main id="mainContent" class="pt-16 transition-all duration-300 ml-64" data-main-content>
+        <main data-sidebar-target="content"
+              class="pt-16 transition-all duration-300 ml-64">
             <div class="p-4">
                 {% block dashboard_content %}{% endblock %}
             </div>
@@ -65,5 +73,4 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('js/sidebar.js') }}"></script>
 {% endblock %}
