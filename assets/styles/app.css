@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animations pour le dropdown */
+.dropdown-enter {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.dropdown-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 150ms ease-out, transform 150ms ease-out;
+}
+
+.dropdown-exit {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdown-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 150ms ease-in, transform 150ms ease-in;
+}
+
 body {
     background-color: skyblue;
 }
