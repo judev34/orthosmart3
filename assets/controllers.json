@@ -13,6 +13,10 @@
             "turbo-core": {
                 "enabled": false,
                 "fetch": "eager"
+            },
+            "mercure-turbo-stream": {
+                "enabled": false,
+                "fetch": "eager"
             }
         }
     },

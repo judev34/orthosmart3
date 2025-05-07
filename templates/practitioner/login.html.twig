@@ -16,7 +16,7 @@
                 {% endfor %}
             {% endfor %}
 
-            <form method="post">
+            <form method="post" data-turbo="false">
                 {% if error %}
                     <div class="mb-4 p-4 rounded bg-red-100 text-red-700">
                         {{ error.messageKey|trans(error.messageData, 'security') }}
