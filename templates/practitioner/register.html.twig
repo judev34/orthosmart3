@@ -19,31 +19,31 @@
                 </div>
 
                 <div class="mb-4">
-                    {{ form_label(registrationForm.password.first) }}
+                    {{ form_label(registrationForm.plainPassword.first) }}
                     <div class="password-field-wrapper">
-                        {{ form_widget(registrationForm.password.first) }}
+                        {{ form_widget(registrationForm.plainPassword.first) }}
                         <div class="toggle-password">
                             <i class="fa-regular fa-eye-slash text-gray-500"></i>
                         </div>
                     </div>
-                    {% if not registrationForm.password.first.vars.valid %}
+                    {% if not registrationForm.plainPassword.first.vars.valid %}
                         <div class="mt-1 text-red-600 text-sm">
-                            {{ form_errors(registrationForm.password.first) }}
+                            {{ form_errors(registrationForm.plainPassword.first) }}
                         </div>
                     {% endif %}
                 </div>
 
                 <div class="mb-4">
-                    {{ form_label(registrationForm.password.second) }}
+                    {{ form_label(registrationForm.plainPassword.second) }}
                     <div class="password-field-wrapper">
-                        {{ form_widget(registrationForm.password.second) }}
+                        {{ form_widget(registrationForm.plainPassword.second) }}
                         <div class="toggle-password">
                             <i class="fa-regular fa-eye-slash text-gray-500"></i>
                         </div>
                     </div>
-                    {% if not registrationForm.password.second.vars.valid %}
+                    {% if not registrationForm.plainPassword.second.vars.valid %}
                         <div class="mt-1 text-red-600 text-sm">
-                            {{ form_errors(registrationForm.password.second) }}
+                            {{ form_errors(registrationForm.plainPassword.second) }}
                         </div>
                     {% endif %}
                 </div>

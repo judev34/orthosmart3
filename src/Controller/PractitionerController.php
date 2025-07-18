@@ -12,13 +12,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
-#[Route('/practitioner', name: 'practitioner_')]
 class PractitionerController extends AbstractController
 {
-    #[Route('/login', name: 'login')]
+    #[Route('/practitioner/login', name: 'practitioner_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-
         if ($this->getUser()) {
             return $this->redirectToRoute('practitioner_dashboard');
         }
@@ -34,7 +32,7 @@ class PractitionerController extends AbstractController
         ]);
     }
 
-    #[Route('/register', name: 'register')]
+    #[Route('/practitioner/register', name: 'practitioner_register')]
     public function register(
         Request $request,
         UserPasswordHasherInterface $userPasswordHasher,
@@ -49,32 +47,22 @@ class PractitionerController extends AbstractController
             $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $form->get('email')->getData()]);
             
             if ($existingUser) {
-                $form->get('email')->addError(new \Symfony\Component\Form\FormError('Cet email est déjà utilisé.'));
-                
-                return $this->render('practitioner/register.html.twig', [
-                    'registrationForm' => $form->createView(),
-                ]);
+                $this->addFlash('error', 'Un compte existe déjà avec cet email.');
+                return $this->redirectToRoute('practitioner_register');
             }
 
-            // Encode le mot de passe
+            // encode the plain password
             $user->setPassword(
                 $userPasswordHasher->hashPassword(
                     $user,
-                    $form->get('password')->getData()
+                    $form->get('plainPassword')->getData()
                 )
             );
 
-            // Définir le rôle praticien
             $user->setRoles(['ROLE_PRACTITIONER']);
 
             $entityManager->persist($user);
             $entityManager->flush();
-
-            // Ajouter un message flash
-            $this->addFlash(
-                'success',
-                'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.'
-            );
 
             return $this->redirectToRoute('practitioner_login');
         }
@@ -84,7 +72,7 @@ class PractitionerController extends AbstractController
         ]);
     }
 
-    #[Route('/logout', name: 'logout')]
+    #[Route('/practitioner/logout', name: 'practitioner_logout')]
     public function logout(): void
     {
         // Cette méthode peut rester vide,
