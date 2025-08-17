@@ -1,0 +1,299 @@
+{% extends 'patient/base.html.twig' %}
+
+{% block title %}Passation : {{ test.nom }} - Espace Patient{% endblock %}
+
+{% block patient_content %}
+<div class="max-w-4xl mx-auto space-y-6" {{ stimulus_controller('test-passation') }}
+     data-test-passation-passation-id-value="{{ passation.id }}"
+     data-test-passation-csrf-token-value="{{ csrf_token('test_passation') }}">
+    
+    <!-- En-tête avec progression -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        {{ test.nom }}
+                    </h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                        Répondez aux questions selon votre observation de l'enfant
+                    </p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Progression -->
+                    <div class="flex items-center">
+                        <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                 style="width: {{ progression }}%"
+                                 {{ stimulus_target('test-passation', 'progressBar') }}></div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700"
+                              {{ stimulus_target('test-passation', 'progressText') }}>{{ progression }}%</span>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex space-x-2">
+                        <button type="button" 
+                                {{ stimulus_action('test-passation', 'suspend', 'click') }}
+                                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fas fa-pause mr-2"></i>
+                            Suspendre
+                        </button>
+                        <button type="button" 
+                                {{ stimulus_action('test-passation', 'preview', 'click') }}
+                                class="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100">
+                            <i class="fas fa-eye mr-2"></i>
+                            Aperçu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-400"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">
+                    Instructions pour la passation
+                </h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li><strong>0 :</strong> L'enfant ne fait jamais cela</li>
+                        <li><strong>1 :</strong> L'enfant fait parfois cela</li>
+                        <li><strong>2 :</strong> L'enfant fait souvent cela</li>
+                    </ul>
+                    <p class="mt-2">
+                        <strong>Important :</strong> Vos réponses sont automatiquement sauvegardées. 
+                        Vous pouvez interrompre et reprendre le test à tout moment.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de passation -->
+    <form {{ stimulus_target('test-passation', 'form') }} class="space-y-8">
+        {% for partie, items in items_par_parties %}
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        Partie {{ partie }} : {{ test.getPartieNom(partie) }}
+                    </h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                        {{ test.getPartieDescription(partie) }}
+                    </p>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="px-4 py-5 sm:p-6 space-y-6">
+                        {% for item in items %}
+                            <div class="border-b border-gray-100 pb-4 last:border-b-0">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1 pr-4">
+                                        <label class="text-sm font-medium text-gray-900">
+                                            {{ loop.index }}. {{ item.texte }}
+                                        </label>
+                                        {% if item.isDG %}
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <i class="fas fa-star mr-1"></i>
+                                                DG
+                                            </span>
+                                        {% endif %}
+                                        {% if item.description %}
+                                            <p class="mt-1 text-xs text-gray-500">{{ item.description }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        {% set currentResponse = reponses[item.id] ?? null %}
+                                        {% for value in [0, 1, 2] %}
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="radio" 
+                                                       name="item_{{ item.id }}" 
+                                                       value="{{ value }}"
+                                                       {% if currentResponse == value %}checked{% endif %}
+                                                       {{ stimulus_action('test-passation', 'saveResponse', 'change') }}
+                                                       data-item-id="{{ item.id }}"
+                                                       class="sr-only">
+                                                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-medium transition-all
+                                                    {% if currentResponse == value %}
+                                                        {% if value == 0 %}border-red-500 bg-red-500 text-white
+                                                        {% elseif value == 1 %}border-yellow-500 bg-yellow-500 text-white
+                                                        {% else %}border-green-500 bg-green-500 text-white{% endif %}
+                                                    {% else %}
+                                                        border-gray-300 bg-white text-gray-700 hover:border-gray-400
+                                                    {% endif %}">
+                                                    {{ value }}
+                                                </div>
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Actions finales -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Finaliser le test</h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Une fois terminé, le test sera envoyé à votre praticien pour validation.
+                        </p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="button" 
+                                {{ stimulus_action('test-passation', 'abandon', 'click') }}
+                                class="inline-flex items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100">
+                            <i class="fas fa-times mr-2"></i>
+                            Abandonner
+                        </button>
+                        <button type="button" 
+                                {{ stimulus_action('test-passation', 'finish', 'click') }}
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                            <i class="fas fa-check mr-2"></i>
+                            Terminer le test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Messages de statut -->
+    <div {{ stimulus_target('test-passation', 'messages') }} class="hidden">
+        <!-- Messages d'alerte seront injectés ici via JavaScript -->
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mt-4" id="modal-title">Confirmation</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500" id="modal-message">
+                    Êtes-vous sûr de vouloir effectuer cette action ?
+                </p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="modal-cancel" 
+                        class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 mr-2">
+                    Annuler
+                </button>
+                <button id="modal-confirm" 
+                        class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700">
+                    Confirmer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-save functionality
+document.addEventListener('DOMContentLoaded', function() {
+    let saveTimeout;
+    const passationId = {{ passation.id }};
+    
+    // Auto-save des réponses
+    function autoSave() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            const formData = new FormData(document.querySelector('[data-test-passation-target="form"]'));
+            const responses = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (key.startsWith('item_')) {
+                    const itemId = key.replace('item_', '');
+                    responses[itemId] = parseInt(value);
+                }
+            }
+            
+            if (Object.keys(responses).length > 0) {
+                fetch(`/patient/passation/${passationId}/save-responses`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ reponses: responses })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateProgress(data.progression);
+                        showMessage('Réponses sauvegardées automatiquement', 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la sauvegarde:', error);
+                });
+            }
+        }, 2000); // Sauvegarde après 2 secondes d'inactivité
+    }
+    
+    // Écouter les changements sur les radio buttons
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', autoSave);
+    });
+    
+    // Mise à jour de la progression
+    function updateProgress(progression) {
+        const progressBar = document.querySelector('[data-test-passation-target="progressBar"]');
+        const progressText = document.querySelector('[data-test-passation-target="progressText"]');
+        
+        if (progressBar) progressBar.style.width = progression + '%';
+        if (progressText) progressText.textContent = progression + '%';
+    }
+    
+    // Affichage des messages
+    function showMessage(message, type = 'info') {
+        const messagesContainer = document.querySelector('[data-test-passation-target="messages"]');
+        const alertClass = type === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 
+                          type === 'error' ? 'bg-red-50 text-red-800 border-red-200' : 
+                          'bg-blue-50 text-blue-800 border-blue-200';
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `mb-4 p-3 rounded-lg border ${alertClass}`;
+        messageDiv.innerHTML = `
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                </div>
+                <div class="ml-3">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.classList.remove('hidden');
+        
+        // Supprimer le message après 3 secondes
+        setTimeout(() => {
+            messageDiv.remove();
+            if (messagesContainer.children.length === 0) {
+                messagesContainer.classList.add('hidden');
+            }
+        }, 3000);
+    }
+    
+    // Sauvegarde avant fermeture de page
+    window.addEventListener('beforeunload', function(e) {
+        autoSave();
+    });
+});
+</script>
+{% endblock %}

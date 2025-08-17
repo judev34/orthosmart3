@@ -1,0 +1,305 @@
+{% extends 'patient/base.html.twig' %}
+
+{% block title %}Tableau de bord - Espace Patient{% endblock %}
+
+{% block patient_content %}
+<div class="space-y-6">
+    <!-- En-tête de bienvenue -->
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-user text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h1 class="text-2xl font-bold text-gray-900">
+                        Bonjour {{ patient.prenom }} !
+                    </h1>
+                    <p class="text-gray-600">
+                        Bienvenue dans votre espace personnel
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clipboard-list text-blue-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-5 flex-1">
+                        <div class="text-sm font-medium text-gray-500 truncate mb-1">
+                            Tests prescrits
+                        </div>
+                        <div class="text-lg font-medium text-gray-900">
+                            {{ stats.tests_prescrits }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+                <div class="text-sm">
+                    <a href="{{ path('patient_tests') }}" class="font-medium text-blue-700 hover:text-blue-900">
+                        Voir tous les tests
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-play-circle text-orange-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-5 flex-1">
+                        <div class="text-sm font-medium text-gray-500 truncate mb-1">
+                            Tests en cours
+                        </div>
+                        <div class="text-lg font-medium text-gray-900">
+                            {{ stats.tests_en_cours }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+                <div class="text-sm">
+                    {% if stats.tests_en_cours > 0 %}
+                        <span class="font-medium text-orange-700">
+                            À reprendre
+                        </span>
+                    {% else %}
+                        <span class="font-medium text-gray-500">
+                            Aucun test en cours
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-5 flex-1">
+                        <div class="text-sm font-medium text-gray-500 truncate mb-1">
+                            Bilans disponibles
+                        </div>
+                        <div class="text-lg font-medium text-gray-900">
+                            {{ stats.bilans_disponibles }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+                <div class="text-sm">
+                    <a href="{{ path('patient_bilans') }}" class="font-medium text-green-700 hover:text-green-900">
+                        Consulter les bilans
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tests en cours -->
+    {% if passations_en_cours|length > 0 %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Tests en cours
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Reprenez vos tests là où vous les avez laissés
+            </p>
+        </div>
+        <ul class="divide-y divide-gray-200">
+            {% for passation in passations_en_cours %}
+            <li>
+                <div class="px-4 py-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <div class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <i class="fas fa-play text-orange-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ passation.prescription.test.nom }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                Progression : {{ passation.progression }}%
+                                {% if passation.isSuspendue %}
+                                    <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Suspendu
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <a href="{{ path('patient_test_passation', {id: passation.id}) }}" 
+                           class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                            <i class="fas fa-play mr-2"></i>
+                            Reprendre
+                        </a>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Tests prescrits -->
+    {% if prescriptions|length > 0 %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Tests prescrits récents
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Tests prescrits par votre praticien
+            </p>
+        </div>
+        <ul class="divide-y divide-gray-200">
+            {% for prescription in prescriptions|slice(0, 3) %}
+            <li>
+                <div class="px-4 py-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-clipboard-list text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ prescription.test.nom }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                Prescrit le {{ prescription.dateCreation|date('d/m/Y') }}
+                                {% if prescription.priorite == 'haute' %}
+                                    <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Priorité haute
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        {% if prescription.hasConsentementRGPD %}
+                            <a href="{{ path('patient_test_start', {id: prescription.id}) }}" 
+                               class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-play mr-2"></i>
+                                Commencer
+                            </a>
+                        {% else %}
+                            <a href="{{ path('patient_consent', {id: prescription.id}) }}" 
+                               class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Consentement requis
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% if prescriptions|length > 3 %}
+        <div class="bg-gray-50 px-4 py-3">
+            <div class="text-sm">
+                <a href="{{ path('patient_tests') }}" class="font-medium text-blue-700 hover:text-blue-900">
+                    Voir tous les tests prescrits ({{ prescriptions|length }})
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Bilans récents -->
+    {% if bilans_recents|length > 0 %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Bilans récents
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Vos derniers résultats de tests
+            </p>
+        </div>
+        <ul class="divide-y divide-gray-200">
+            {% for bilan in bilans_recents %}
+            <li>
+                <div class="px-4 py-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <div class="h-10 w-10 rounded-full {% if bilan.niveauRisqueGlobal == 'faible' %}bg-green-100{% elseif bilan.niveauRisqueGlobal == 'modere' %}bg-yellow-100{% else %}bg-red-100{% endif %} flex items-center justify-center">
+                                <i class="fas fa-chart-line {% if bilan.niveauRisqueGlobal == 'faible' %}text-green-600{% elseif bilan.niveauRisqueGlobal == 'modere' %}text-yellow-600{% else %}text-red-600{% endif %}"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ bilan.prescription.test.nom }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ bilan.dateGeneration|date('d/m/Y') }}
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if bilan.niveauRisqueGlobal == 'faible' %}bg-green-100 text-green-800
+                                    {% elseif bilan.niveauRisqueGlobal == 'modere' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ bilan.nomNiveauRisque }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        {% if bilan.isValide or bilan.isFinalise %}
+                            <a href="{{ path('patient_bilan_view', {id: bilan.id}) }}" 
+                               class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <i class="fas fa-eye mr-2"></i>
+                                Consulter
+                            </a>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium text-gray-500">
+                                <i class="fas fa-clock mr-2"></i>
+                                En attente de validation
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="bg-gray-50 px-4 py-3">
+            <div class="text-sm">
+                <a href="{{ path('patient_bilans') }}" class="font-medium text-green-700 hover:text-green-900">
+                    Voir tous mes bilans
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Message si aucune activité -->
+    {% if prescriptions|length == 0 and passations_en_cours|length == 0 and bilans_recents|length == 0 %}
+    <div class="text-center py-12">
+        <div class="mx-auto h-24 w-24 text-gray-400">
+            <i class="fas fa-clipboard-list text-6xl"></i>
+        </div>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">Aucun test prescrit</h3>
+        <p class="mt-2 text-sm text-gray-500">
+            Votre praticien n'a pas encore prescrit de test. 
+            Contactez-le si vous pensez qu'il y a une erreur.
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

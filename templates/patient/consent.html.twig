@@ -1,0 +1,180 @@
+{% extends 'patient/base.html.twig' %}
+
+{% block title %}Consentement RGPD - Espace Patient{% endblock %}
+
+{% block patient_content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Consentement pour la passation du test
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                {{ prescription.test.nom }}
+            </p>
+        </div>
+        
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div class="space-y-6">
+                <!-- Information sur le test -->
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">
+                                Information sur le test
+                            </h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <p><strong>Test :</strong> {{ prescription.test.nom }}</p>
+                                <p><strong>Prescrit par :</strong> Dr. {{ prescription.praticien.email }}</p>
+                                <p><strong>Date de prescription :</strong> {{ prescription.dateCreation|date('d/m/Y') }}</p>
+                                {% if prescription.instructions %}
+                                    <p><strong>Instructions :</strong> {{ prescription.instructions }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consentement RGPD -->
+                <div class="prose max-w-none">
+                    <h4 class="text-base font-medium text-gray-900">Traitement des données personnelles</h4>
+                    
+                    <p class="text-sm text-gray-700">
+                        Conformément au Règlement Général sur la Protection des Données (RGPD), nous vous informons que :
+                    </p>
+
+                    <ul class="text-sm text-gray-700 space-y-2 list-disc list-inside">
+                        <li><strong>Responsable du traitement :</strong> Votre praticien orthophoniste</li>
+                        <li><strong>Finalité :</strong> Évaluation orthophonique et suivi thérapeutique</li>
+                        <li><strong>Base légale :</strong> Votre consentement libre et éclairé</li>
+                        <li><strong>Données collectées :</strong> Réponses au test, scores, âge au moment du test</li>
+                        <li><strong>Durée de conservation :</strong> 1 an après la fin du suivi (modifiable selon les besoins)</li>
+                        <li><strong>Destinataires :</strong> Seul votre praticien aura accès à vos données</li>
+                    </ul>
+
+                    <h5 class="text-sm font-medium text-gray-900 mt-4">Vos droits</h5>
+                    <p class="text-sm text-gray-700">
+                        Vous disposez des droits suivants concernant vos données personnelles :
+                    </p>
+                    <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                        <li>Droit d'accès à vos données</li>
+                        <li>Droit de rectification en cas d'erreur</li>
+                        <li>Droit à l'effacement (droit à l'oubli)</li>
+                        <li>Droit à la portabilité de vos données</li>
+                        <li>Droit de retirer votre consentement à tout moment</li>
+                    </ul>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mt-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-800">
+                                    <strong>Important :</strong> Le retrait de votre consentement entraînera l'arrêt du test et la suppression de vos données. 
+                                    Cette action est irréversible.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire de consentement -->
+                <form method="post" class="space-y-4">
+                    <input type="hidden" name="_token" value="{{ csrf_token('consent') }}">
+                    
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="consent-checkbox" 
+                                   name="consentement" 
+                                   type="checkbox" 
+                                   value="accept"
+                                   required
+                                   class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="consent-checkbox" class="font-medium text-gray-700">
+                                Je consens au traitement de mes données personnelles
+                            </label>
+                            <p class="text-gray-500">
+                                J'ai lu et compris les informations relatives au traitement de mes données personnelles. 
+                                Je consens librement à ce que mes réponses au test soient collectées, traitées et conservées 
+                                dans le cadre de mon suivi orthophonique.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="understand-checkbox" 
+                                   type="checkbox" 
+                                   required
+                                   class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="understand-checkbox" class="font-medium text-gray-700">
+                                Je comprends mes droits
+                            </label>
+                            <p class="text-gray-500">
+                                Je comprends que je peux retirer mon consentement à tout moment et exercer mes droits 
+                                en contactant mon praticien.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="flex justify-between pt-6">
+                        <a href="{{ path('patient_tests') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Retour aux tests
+                        </a>
+                        
+                        <div class="flex space-x-3">
+                            <button type="button" 
+                                    onclick="window.history.back()"
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                Annuler
+                            </button>
+                            
+                            <button type="submit" 
+                                    id="consent-submit"
+                                    disabled
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                <i class="fas fa-check mr-2"></i>
+                                Donner mon consentement
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const consentCheckbox = document.getElementById('consent-checkbox');
+    const understandCheckbox = document.getElementById('understand-checkbox');
+    const submitButton = document.getElementById('consent-submit');
+    
+    function updateSubmitButton() {
+        if (consentCheckbox.checked && understandCheckbox.checked) {
+            submitButton.disabled = false;
+            submitButton.classList.remove('bg-gray-300', 'cursor-not-allowed');
+            submitButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        } else {
+            submitButton.disabled = true;
+            submitButton.classList.add('bg-gray-300', 'cursor-not-allowed');
+            submitButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        }
+    }
+    
+    consentCheckbox.addEventListener('change', updateSubmitButton);
+    understandCheckbox.addEventListener('change', updateSubmitButton);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,344 @@
+{% extends 'patient/base.html.twig' %}
+
+{% block title %}Bilan {{ bilan.prescription.test.nom }} - Espace Patient{% endblock %}
+
+{% block patient_content %}
+<div class="space-y-6">
+    <!-- En-tête du bilan -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        Bilan : {{ bilan.prescription.test.nom }}
+                    </h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                        Généré le {{ bilan.dateGeneration|date('d/m/Y à H:i') }}
+                        {% if bilan.version > 1 %} - Version {{ bilan.version }}{% endif %}
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                        {% if bilan.niveauRisqueGlobal == 'faible' %}bg-green-100 text-green-800
+                        {% elseif bilan.niveauRisqueGlobal == 'modere' %}bg-yellow-100 text-yellow-800
+                        {% elseif bilan.niveauRisqueGlobal == 'haut' %}bg-orange-100 text-orange-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ bilan.nomNiveauRisque }}
+                    </span>
+                    <a href="{{ path('patient_bilans') }}" 
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Retour aux bilans
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résumé des scores -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-trophy text-yellow-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">
+                                Score DG (Développement Global)
+                            </dt>
+                            <dd class="text-2xl font-bold text-gray-900">
+                                {{ bilan.scoreDG }}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if bilan.ageDeveloppementMois %}
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-child text-blue-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">
+                                Âge de développement
+                            </dt>
+                            <dd class="text-lg font-bold text-gray-900">
+                                {{ bilan.ageDeveloppementFormate }}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-calendar text-green-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">
+                                Date du test
+                            </dt>
+                            <dd class="text-sm font-medium text-gray-900">
+                                {{ bilan.prescription.passations|first.dateDebut|date('d/m/Y') }}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profil graphique des scores -->
+    {% if bilan.profilGraphique %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Profil des scores par domaine
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Répartition des résultats selon les différents domaines évalués
+            </p>
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div class="space-y-4">
+                {% for domaine in bilan.profilGraphique %}
+                <div class="flex items-center">
+                    <div class="w-32 text-sm font-medium text-gray-700 truncate">
+                        {{ domaine.nom }}
+                    </div>
+                    <div class="flex-1 mx-4">
+                        <div class="flex items-center">
+                            <div class="flex-1 bg-gray-200 rounded-full h-4 relative">
+                                <!-- Barre de score -->
+                                <div class="h-4 rounded-full" 
+                                     style="width: {{ (domaine.score / 30 * 100)|round }}%; background-color: {{ domaine.couleur }}"></div>
+                                <!-- Seuils -->
+                                {% if domaine.seuil_hr %}
+                                <div class="absolute top-0 h-4 w-0.5 bg-orange-500" 
+                                     style="left: {{ (domaine.seuil_hr / 30 * 100)|round }}%"
+                                     title="Seuil Haut Risque: {{ domaine.seuil_hr }}"></div>
+                                {% endif %}
+                                {% if domaine.seuil_thr %}
+                                <div class="absolute top-0 h-4 w-0.5 bg-red-600" 
+                                     style="left: {{ (domaine.seuil_thr / 30 * 100)|round }}%"
+                                     title="Seuil Très Haut Risque: {{ domaine.seuil_thr }}"></div>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3 text-sm font-medium text-gray-900 w-8">
+                                {{ domaine.score }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-20 text-right">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                              style="background-color: {{ domaine.couleur }}20; color: {{ domaine.couleur }}">
+                            {{ domaine.niveau_risque|replace({'_': ' '})|title }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 flex items-center text-xs text-gray-500">
+                <div class="flex items-center mr-4">
+                    <div class="w-2 h-2 bg-orange-500 mr-1"></div>
+                    Seuil Haut Risque
+                </div>
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-red-600 mr-1"></div>
+                    Seuil Très Haut Risque
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Points forts et points de vigilance -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Points forts -->
+        {% set pointsForts = bilan.pointsForts %}
+        {% if pointsForts|length > 0 %}
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-green-800">
+                    <i class="fas fa-thumbs-up mr-2"></i>
+                    Points forts ({{ pointsForts|length }})
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                    Domaines où le développement est adapté à l'âge
+                </p>
+            </div>
+            <div class="border-t border-gray-200">
+                <ul class="divide-y divide-gray-200">
+                    {% for point in pointsForts %}
+                    <li class="px-4 py-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-gray-900">{{ point.description }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ point.domaine }}</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Points de vigilance -->
+        {% set pointsVigilance = bilan.pointsVigilance %}
+        {% if pointsVigilance|length > 0 %}
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-orange-800">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Points de vigilance ({{ pointsVigilance|length }})
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                    Domaines nécessitant une attention particulière
+                </p>
+            </div>
+            <div class="border-t border-gray-200">
+                <ul class="divide-y divide-gray-200">
+                    {% for point in pointsVigilance %}
+                    <li class="px-4 py-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-orange-500 mt-0.5"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-gray-900">{{ point.description }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ point.domaine }}</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Interprétation automatique -->
+    {% if bilan.interpretationAutomatique %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                <i class="fas fa-robot mr-2"></i>
+                Interprétation automatique
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Analyse automatique des résultats basée sur les normes du test
+            </p>
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div class="prose max-w-none text-sm text-gray-700">
+                {{ bilan.interpretationAutomatique|nl2br }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Commentaires du praticien -->
+    {% if bilan.commentairesPraticien %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                <i class="fas fa-user-md mr-2"></i>
+                Commentaires du praticien
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Analyse et observations de votre orthophoniste
+            </p>
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div class="prose max-w-none text-sm text-gray-700">
+                {{ bilan.commentairesPraticien|nl2br }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recommandations -->
+    {% if bilan.recommandations %}
+    <div class="bg-blue-50 border border-blue-200 shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-blue-900">
+                <i class="fas fa-lightbulb mr-2"></i>
+                Recommandations
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-blue-700">
+                Conseils et orientations pour la suite
+            </p>
+        </div>
+        <div class="border-t border-blue-200 px-4 py-5 sm:p-6">
+            <div class="prose max-w-none text-sm text-blue-800">
+                {{ bilan.recommandations|nl2br }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Informations techniques -->
+    <div class="bg-gray-50 shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Informations sur le test
+            </h3>
+        </div>
+        <div class="border-t border-gray-200">
+            <dl>
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Test utilisé</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {{ bilan.prescription.test.nom }} ({{ bilan.prescription.test.version }})
+                    </dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Prescrit par</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        Dr. {{ bilan.prescription.praticien.email }}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Date de prescription</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {{ bilan.prescription.dateCreation|date('d/m/Y à H:i') }}
+                    </dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Statut du bilan</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if bilan.isFinalise %}bg-green-100 text-green-800
+                            {% elseif bilan.isValide %}bg-blue-100 text-blue-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {% if bilan.isFinalise %}
+                                <i class="fas fa-lock mr-1"></i>Finalisé
+                            {% elseif bilan.isValide %}
+                                <i class="fas fa-check mr-1"></i>Validé
+                            {% else %}
+                                <i class="fas fa-edit mr-1"></i>En révision
+                            {% endif %}
+                        </span>
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

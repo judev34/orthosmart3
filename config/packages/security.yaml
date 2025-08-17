@@ -8,11 +8,30 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
+        app_patient_provider:
+            entity:
+                class: App\Entity\Patient
+                property: email
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        patient:
+            pattern: ^/patient
+            lazy: true
+            provider: app_patient_provider
+            form_login:
+                login_path: patient_login
+                check_path: patient_login
+                enable_csrf: true
+                default_target_path: patient_dashboard
+                username_parameter: _username
+                password_parameter: _password
+            logout:
+                path: patient_logout
+                target: patient_login
         main:
+            pattern: ^/
             lazy: true
             provider: app_user_provider
             form_login:
@@ -20,6 +39,8 @@ security:
                 check_path: practitioner_login
                 enable_csrf: true
                 default_target_path: practitioner_dashboard
+                username_parameter: _username
+                password_parameter: _password
             logout:
                 path: practitioner_logout
                 target: practitioner_login
@@ -35,7 +56,11 @@ security:
     access_control:
         - { path: ^/practitioner/login, roles: PUBLIC_ACCESS }
         - { path: ^/practitioner/register, roles: PUBLIC_ACCESS }
-        - { path: ^/practitioner/dashboard, roles: ROLE_USER }
+        - { path: ^/practitioner/dashboard, roles: ROLE_PRACTITIONER }
+        - { path: ^/practitioner, roles: ROLE_PRACTITIONER }
+        - { path: ^/patient/login, roles: PUBLIC_ACCESS }
+        - { path: ^/patient/dashboard, roles: ROLE_PATIENT }
+        - { path: ^/patient, roles: ROLE_PATIENT }
 
 when@test:
     security:
