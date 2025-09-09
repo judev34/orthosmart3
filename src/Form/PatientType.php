@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Patient;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -39,6 +40,17 @@ class PatientType extends AbstractType
                 'attr' => [
                     'class' => 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
                     'placeholder' => 'exemple@email.com'
+                ],
+                'row_attr' => [
+                    'class' => 'mb-4'
+                ]
+            ])
+            ->add('dateNaissance', DateType::class, [
+                'label' => 'Date de naissance',
+                'widget' => 'single_text',
+                'attr' => [
+                    'class' => 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                    'type' => 'date'
                 ],
                 'row_attr' => [
                     'class' => 'mb-4'

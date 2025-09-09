@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\PatientRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -31,6 +34,10 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(message: 'L\'email {{ value }} n\'est pas un email valide')]
     private ?string $email = null;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotBlank(message: 'La date de naissance est obligatoire')]
+    private ?\DateTimeInterface $dateNaissance = null;
+
     #[ORM\Column]
     private ?string $password = null;
 
@@ -43,6 +50,18 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private array $roles = [];
+
+    /**
+     * @var Collection<int, Prescription>
+     */
+    #[ORM\OneToMany(mappedBy: 'patient', targetEntity: Prescription::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
+    private Collection $prescriptions;
+
+    public function __construct()
+    {
+        $this->prescriptions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -79,6 +98,18 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+        return $this;
+    }
+
+    public function getDateNaissance(): ?\DateTimeInterface
+    {
+        return $this->dateNaissance;
+    }
+
+    public function setDateNaissance(\DateTimeInterface $dateNaissance): static
+    {
+        $this->dateNaissance = $dateNaissance;
+
         return $this;
     }
 
@@ -146,5 +177,100 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
+    }
+
+    /**
+     * @return Collection<int, Prescription>
+     */
+    public function getPrescriptions(): Collection
+    {
+        return $this->prescriptions;
+    }
+
+    public function addPrescription(Prescription $prescription): static
+    {
+        if (!$this->prescriptions->contains($prescription)) {
+            $this->prescriptions->add($prescription);
+            $prescription->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removePrescription(Prescription $prescription): static
+    {
+        if ($this->prescriptions->removeElement($prescription)) {
+            // set the owning side to null (unless already changed)
+            if ($prescription->getPatient() === $this) {
+                $prescription->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Retourne les prescriptions actives (non annulées)
+     */
+    public function getPrescriptionsActives(): Collection
+    {
+        return $this->prescriptions->filter(function (Prescription $prescription) {
+            return $prescription->getStatut() !== Prescription::STATUT_ANNULE;
+        });
+    }
+
+    /**
+     * Retourne les prescriptions en cours ou en attente
+     */
+    public function getPrescriptionsEnCours(): Collection
+    {
+        return $this->prescriptions->filter(function (Prescription $prescription) {
+            return in_array($prescription->getStatut(), [
+                Prescription::STATUT_EN_ATTENTE,
+                Prescription::STATUT_EN_COURS
+            ]);
+        });
+    }
+
+    /**
+     * Calcule l'âge en mois à une date donnée
+     */
+    public function getAgeEnMois(?\DateTimeInterface $dateReference = null): int
+    {
+        if ($this->dateNaissance === null) {
+            return 0;
+        }
+
+        $dateReference = $dateReference ?? new \DateTime();
+        $interval = $this->dateNaissance->diff($dateReference);
+        
+        return ($interval->y * 12) + $interval->m;
+    }
+
+    /**
+     * Retourne l'âge formaté
+     */
+    public function getAgeFormate(?\DateTimeInterface $dateReference = null): string
+    {
+        if ($this->dateNaissance === null) {
+            return 'Non renseigné';
+        }
+
+        $dateReference = $dateReference ?? new \DateTime();
+        $interval = $this->dateNaissance->diff($dateReference);
+        
+        if ($interval->y > 0) {
+            return sprintf('%d an%s %d mois', $interval->y, $interval->y > 1 ? 's' : '', $interval->m);
+        }
+        
+        return sprintf('%d mois', $interval->m);
+    }
+
+    /**
+     * Retourne le nom complet du patient
+     */
+    public function getNomComplet(): string
+    {
+        return trim($this->prenom . ' ' . $this->nom);
     }
 }

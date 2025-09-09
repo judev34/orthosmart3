@@ -17,7 +17,7 @@
             <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <a href="/" class="text-white text-xl font-bold">OrthoSmart</a>
                 <div class="flex items-center gap-4">
-                    <a href="#" class="text-white px-4 py-2">Espace Patient</a>
+                    <a href="{{ path('patient_login') }}" class="text-white px-4 py-2">Espace Patient</a>
                     <a href="{{ path('practitioner_login') }}" class="bg-white text-[#00487C] px-4 py-2 rounded">Espace Praticien</a>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                         La plateforme innovante pour les orthophonistes et leurs patients. Simplifiez la gestion de vos tests et suivis thérapeutiques.
                     </p>
                     <div class="flex flex-col sm:flex-row justify-center gap-4">
-                        <a href="#" class="bg-[#4BB3FD] text-white px-8 py-3 rounded">Espace Patient</a>
+                        <a href="{{ path('patient_login') }}" class="bg-[#4BB3FD] text-white px-8 py-3 rounded">Espace Patient</a>
                         <a href="{{ path('practitioner_login') }}" class="bg-white text-[#00487C] px-8 py-3 rounded">Espace Praticien</a>
                     </div>
                 </div>

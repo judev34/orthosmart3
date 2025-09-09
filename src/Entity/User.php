@@ -36,9 +36,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'praticien', targetEntity: Patient::class, orphanRemoval: true)]
     private Collection $patients;
 
+    /**
+     * @var Collection<int, Prescription>
+     */
+    #[ORM\OneToMany(mappedBy: 'praticien', targetEntity: Prescription::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
+    private Collection $prescriptions;
+
     public function __construct()
     {
         $this->patients = new ArrayCollection();
+        $this->prescriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -144,5 +152,55 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Prescription>
+     */
+    public function getPrescriptions(): Collection
+    {
+        return $this->prescriptions;
+    }
+
+    public function addPrescription(Prescription $prescription): static
+    {
+        if (!$this->prescriptions->contains($prescription)) {
+            $this->prescriptions->add($prescription);
+            $prescription->setPraticien($this);
+        }
+
+        return $this;
+    }
+
+    public function removePrescription(Prescription $prescription): static
+    {
+        if ($this->prescriptions->removeElement($prescription)) {
+            // set the owning side to null (unless already changed)
+            if ($prescription->getPraticien() === $this) {
+                $prescription->setPraticien(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Retourne les prescriptions actives (non annulées)
+     */
+    public function getPrescriptionsActives(): Collection
+    {
+        return $this->prescriptions->filter(function (Prescription $prescription) {
+            return $prescription->getStatut() !== Prescription::STATUT_ANNULE;
+        });
+    }
+
+    /**
+     * Retourne les prescriptions en attente de validation
+     */
+    public function getPrescriptionsEnAttente(): Collection
+    {
+        return $this->prescriptions->filter(function (Prescription $prescription) {
+            return $prescription->getStatut() === Prescription::STATUT_TERMINE;
+        });
     }
 }
