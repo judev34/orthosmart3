@@ -12,6 +12,23 @@ framework:
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
+            
+            # Transport pour notifications emails
+            email_notifications:
+                dsn: 'doctrine://default?queue_name=email_notifications'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+                    multiplier: 2
+            
+            # Transport pour notifications praticiens
+            practitioner_notifications:
+                dsn: 'doctrine://default?queue_name=practitioner_notifications'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 2000
+                    multiplier: 2
+            
             failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
 
@@ -21,9 +38,14 @@ framework:
             messenger.bus.default: []
 
         routing:
-            Symfony\Component\Mailer\Messenger\SendEmailMessage: async
+            Symfony\Component\Mailer\Messenger\SendEmailMessage: email_notifications
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async
+            
+            # Messages personnalisés pour notifications
+            'App\Message\PatientActivationNotification': email_notifications
+            'App\Message\PractitionerNotification': practitioner_notifications
+            'App\Message\BilanReadyNotification': email_notifications
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async

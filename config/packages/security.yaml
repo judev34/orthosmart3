@@ -30,6 +30,17 @@ security:
             logout:
                 path: patient_logout
                 target: patient_login
+                invalidate_session: true
+                delete_cookies:
+                    PHPSESSID: { path: /, domain: ~ }
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 semaine
+                path: /patient
+                domain: ~
+                secure: auto
+                httponly: true
+                samesite: strict
         main:
             pattern: ^/
             lazy: true
@@ -44,6 +55,17 @@ security:
             logout:
                 path: practitioner_logout
                 target: practitioner_login
+                invalidate_session: true
+                delete_cookies:
+                    PHPSESSID: { path: /, domain: ~ }
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 semaine
+                path: /
+                domain: ~
+                secure: auto
+                httponly: true
+                samesite: strict
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -55,7 +77,7 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/practitioner/login, roles: PUBLIC_ACCESS }
-        - { path: ^/practitioner/register, roles: PUBLIC_ACCESS }
+        - { path: ^/practitioner/register, roles: ROLE_ADMIN }
         - { path: ^/practitioner/dashboard, roles: ROLE_PRACTITIONER }
         - { path: ^/practitioner, roles: ROLE_PRACTITIONER }
         - { path: ^/patient/login, roles: PUBLIC_ACCESS }

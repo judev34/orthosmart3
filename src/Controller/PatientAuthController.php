@@ -14,6 +14,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Form\PatientPasswordType;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use App\Service\SessionManagementService;
+use Symfony\Component\HttpFoundation\RateLimiter\RequestRateLimiterInterface;
 
 /**
  * Contrôleur d'authentification et dashboard pour les patients
@@ -24,6 +28,9 @@ class PatientAuthController extends AbstractController
         private TestService $testService,
         private PassationService $passationService,
         private BilanService $bilanService,
+        private RateLimiterFactory $loginLimiter,
+        private RateLimiterFactory $passwordChangeLimiter,
+        private SessionManagementService $sessionService,
         private EntityManagerInterface $entityManager
     ) {
     }
@@ -32,11 +39,24 @@ class PatientAuthController extends AbstractController
      * Page de connexion patient
      */
     #[Route('/patient/login', name: 'patient_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request, RateLimiterFactory $loginAttemptsLimiter): Response
     {
         // Si déjà connecté, rediriger vers le dashboard
         if ($this->getUser()) {
             return $this->redirectToRoute('patient_dashboard');
+        }
+
+        // Rate limiting par IP
+        $limiter = $loginAttemptsLimiter->create($request->getClientIp());
+        
+        // Vérifier si la limite est atteinte
+        if (!$limiter->consume(1)->isAccepted()) {
+            $this->addFlash('error', 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.');
+            return $this->render('patient/login.html.twig', [
+                'last_username' => '',
+                'error' => null,
+                'rate_limited' => true,
+            ]);
         }
 
         // Récupérer l'erreur de connexion s'il y en a une
@@ -47,6 +67,7 @@ class PatientAuthController extends AbstractController
         return $this->render('patient/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'rate_limited' => false,
         ]);
     }
 
@@ -103,7 +124,7 @@ class PatientAuthController extends AbstractController
      */
     #[Route('/patient/test/{id}/start', name: 'patient_test_start')]
     #[IsGranted('ROLE_PATIENT')]
-    public function startTest(\App\Entity\Prescription $prescription): Response
+    public function startTest(\App\Entity\Prescription $prescription, Request $request): Response
     {
         /** @var Patient $patient */
         $patient = $this->getUser();
@@ -132,7 +153,7 @@ class PatientAuthController extends AbstractController
 
             if ($passation === null || $passation->isTerminee() || $passation->isAbandonee()) {
                 // Créer une nouvelle passation
-                $passation = $this->passationService->demarrerPassation($prescription);
+                $passation = $this->passationService->demarrerPassation($prescription, $patient->getDateNaissance(), $request);
             } elseif ($passation->isSuspendue()) {
                 // Reprendre la passation suspendue
                 $this->passationService->reprendrePassation($passation);
@@ -148,42 +169,6 @@ class PatientAuthController extends AbstractController
         }
     }
 
-    /**
-     * Page de consentement RGPD
-     */
-    #[Route('/patient/consent/{id}', name: 'patient_consent')]
-    #[IsGranted('ROLE_PATIENT')]
-    public function consent(\App\Entity\Prescription $prescription, Request $request): Response
-    {
-        /** @var Patient $patient */
-        $patient = $this->getUser();
-
-        // Vérifier que la prescription appartient au patient
-        if ($prescription->getPatient() !== $patient) {
-            throw $this->createAccessDeniedException('Cette prescription ne vous appartient pas');
-        }
-
-        if ($request->isMethod('POST')) {
-            $consentement = $request->request->get('consentement');
-            
-            if ($consentement === 'accept') {
-                $prescription->setConsentementRGPD(true);
-                $prescription->setDateConsentement(new \DateTimeImmutable());
-                
-                $this->entityManager->flush();
-                
-                $this->addFlash('success', 'Consentement enregistré. Vous pouvez maintenant commencer le test.');
-                
-                return $this->redirectToRoute('patient_test_start', ['id' => $prescription->getId()]);
-            } else {
-                $this->addFlash('error', 'Le consentement est requis pour passer le test.');
-            }
-        }
-
-        return $this->render('patient/consent.html.twig', [
-            'prescription' => $prescription
-        ]);
-    }
 
     /**
      * Mes bilans - Consultation des résultats
@@ -218,7 +203,7 @@ class PatientAuthController extends AbstractController
         }
 
         // Seuls les bilans validés peuvent être consultés par le patient
-        if (!$bilan->isValide() && !$bilan->isFinalise()) {
+        if (!$bilan->isValide()) {
             $this->addFlash('info', 'Ce bilan n\'est pas encore disponible. Votre praticien doit le valider.');
             return $this->redirectToRoute('patient_bilans');
         }
@@ -238,18 +223,24 @@ class PatientAuthController extends AbstractController
         /** @var Patient $patient */
         $patient = $this->getUser();
 
-        if ($request->isMethod('POST')) {
-            $currentPassword = $request->request->get('current_password');
-            $newPassword = $request->request->get('new_password');
-            $confirmPassword = $request->request->get('confirm_password');
+        // Rate limiting pour changement de mot de passe
+        $limiter = $this->passwordChangeLimiter->create($request->getClientIp());
+        
+        if (!$limiter->consume(1)->isAccepted()) {
+            $this->addFlash('error', 'Trop de tentatives de changement de mot de passe. Veuillez réessayer dans 30 minutes.');
+            return $this->redirectToRoute('patient_dashboard');
+        }
+
+        $form = $this->createForm(PatientPasswordType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $currentPassword = $form->get('currentPassword')->getData();
+            $newPassword = $form->get('plainPassword')->getData();
 
             // Vérifier le mot de passe actuel
             if (!$passwordHasher->isPasswordValid($patient, $currentPassword)) {
                 $this->addFlash('error', 'Le mot de passe actuel est incorrect');
-            } elseif ($newPassword !== $confirmPassword) {
-                $this->addFlash('error', 'Les nouveaux mots de passe ne correspondent pas');
-            } elseif (strlen($newPassword) < 6) {
-                $this->addFlash('error', 'Le nouveau mot de passe doit contenir au moins 6 caractères');
             } else {
                 // Changer le mot de passe
                 $hashedPassword = $passwordHasher->hashPassword($patient, $newPassword);
@@ -257,13 +248,18 @@ class PatientAuthController extends AbstractController
                 
                 $this->entityManager->flush();
                 
-                $this->addFlash('success', 'Mot de passe modifié avec succès');
+                // Invalider toutes les sessions après changement de mot de passe
+                $this->sessionService->invalidateAllUserSessions($patient);
                 
-                return $this->redirectToRoute('patient_dashboard');
+                $this->addFlash('success', 'Mot de passe modifié avec succès. Vous devez vous reconnecter.');
+                
+                return $this->redirectToRoute('patient_login');
             }
         }
 
-        return $this->render('patient/change_password.html.twig');
+        return $this->render('patient/change_password.html.twig', [
+            'passwordForm' => $form->createView()
+        ]);
     }
 
     /**

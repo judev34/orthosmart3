@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Activation de votre compte - OrthoSmart{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-gray-900">
+                <i class="fas fa-user-check text-blue-600 mr-2"></i>
+                Activation de votre compte
+            </h1>
+            <p class="mt-2 text-sm text-gray-600">
+                Bonjour {{ patient.prenom }}, activez votre compte pour accéder à vos tests
+            </p>
+        </div>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            
+            {% for message in app.flashes('error') %}
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>{{ message }}
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('success') %}
+                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                    <i class="fas fa-check-circle mr-2"></i>{{ message }}
+                </div>
+            {% endfor %}
+
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 class="text-sm font-medium text-blue-800 mb-2">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Informations de sécurité
+                </h3>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li>• Confirmez votre date de naissance pour vérifier votre identité</li>
+                    <li>• Choisissez un mot de passe fort (12+ caractères)</li>
+                    <li>• Ce lien expire dans 24 heures</li>
+                </ul>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+                
+                <div>
+                    {{ form_label(form.dateNaissance) }}
+                    {{ form_widget(form.dateNaissance) }}
+                    {{ form_errors(form.dateNaissance) }}
+                    {% if form.dateNaissance.vars.help %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.dateNaissance.vars.help }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form_label(form.plainPassword.first) }}
+                    {{ form_widget(form.plainPassword.first) }}
+                    {{ form_errors(form.plainPassword.first) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.plainPassword.second) }}
+                    {{ form_widget(form.plainPassword.second) }}
+                    {{ form_errors(form.plainPassword.second) }}
+                </div>
+
+                {{ form_errors(form.plainPassword) }}
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-yellow-800 mb-2">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Exigences du mot de passe
+                    </h4>
+                    <ul class="text-sm text-yellow-700 space-y-1">
+                        <li>• Au moins 12 caractères</li>
+                        <li>• Une majuscule (A-Z)</li>
+                        <li>• Une minuscule (a-z)</li>
+                        <li>• Un chiffre (0-9)</li>
+                        <li>• Un caractère spécial (!@#$%...)</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-key text-blue-500 group-hover:text-blue-400"></i>
+                        </span>
+                        Activer mon compte
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Besoin d'aide ?</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Problème avec l'activation ?
+                        <br>
+                        Contactez votre praticien pour obtenir de l'aide.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 text-center">
+        <p class="text-xs text-gray-500">
+            <i class="fas fa-lock mr-1"></i>
+            Vos données sont protégées et chiffrées selon les standards médicaux
+        </p>
+    </div>
+</div>
+{% endblock %}

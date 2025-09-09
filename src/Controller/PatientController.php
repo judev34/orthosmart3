@@ -9,7 +9,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Service\PatientActivationService;
+use App\Service\NotificationService;
 
 #[Route('/practitioner/patients')]
 class PatientController extends AbstractController
@@ -27,26 +28,27 @@ class PatientController extends AbstractController
     }
 
     #[Route('/new', name: 'practitioner_patient_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, PatientActivationService $activationService, NotificationService $notificationService): Response
     {
         $patient = new Patient();
         $form = $this->createForm(PatientType::class, $patient);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Le patient sera activé via email, pas de mot de passe initial
             $patient->setPraticien($this->getUser());
-            
-            // Générer un mot de passe aléatoire
-            $plainPassword = bin2hex(random_bytes(4));
-            $hashedPassword = $passwordHasher->hashPassword($patient, $plainPassword);
-            $patient->setPassword($hashedPassword);
-            $patient->setPlainPassword($plainPassword);
             $patient->setRoles(['ROLE_PATIENT']);
 
             $entityManager->persist($patient);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Patient créé avec succès ! Le mot de passe initial est : ' . $plainPassword);
+            // Générer et envoyer le token d'activation
+            $activationService->generateAndSendActivationToken($patient, $request);
+            
+            // Notifier le praticien
+            $notificationService->notifyPatientRegistered($patient);
+
+            $this->addFlash('success', 'Patient créé avec succès ! Un email d\'activation lui a été envoyé.');
 
             return $this->redirectToRoute('practitioner_patients_index');
         }

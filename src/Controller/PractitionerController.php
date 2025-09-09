@@ -11,14 +11,32 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 class PractitionerController extends AbstractController
 {
+    public function __construct()
+    {
+        // Constructeur vide pour éviter l'erreur de service
+    }
+
     #[Route('/practitioner/login', name: 'practitioner_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request, RateLimiterFactory $loginAttemptsLimiter): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('practitioner_dashboard');
+        }
+
+        // Rate limiting par IP
+        $limiter = $loginAttemptsLimiter->create($request->getClientIp());
+        
+        if (!$limiter->consume(1)->isAccepted()) {
+            $this->addFlash('error', 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.');
+            return $this->render('practitioner/login.html.twig', [
+                'last_username' => '',
+                'error' => null,
+                'rate_limited' => true,
+            ]);
         }
 
         // get the login error if there is one
@@ -29,6 +47,7 @@ class PractitionerController extends AbstractController
         return $this->render('practitioner/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'rate_limited' => false,
         ]);
     }
 

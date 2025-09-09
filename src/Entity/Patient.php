@@ -41,8 +41,6 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $plainPassword = null;
 
     #[ORM\ManyToOne(inversedBy: 'patients')]
     #[ORM\JoinColumn(nullable: false)]
@@ -138,16 +136,6 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPlainPassword(): ?string
-    {
-        return $this->plainPassword;
-    }
-
-    public function setPlainPassword(?string $plainPassword): static
-    {
-        $this->plainPassword = $plainPassword;
-        return $this;
-    }
 
     /**
      * @see UserInterface
@@ -168,7 +156,7 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function eraseCredentials(): void
     {
-        $this->plainPassword = null;
+        // Cette méthode peut rester vide - plus de plainPassword à effacer
     }
 
     /**

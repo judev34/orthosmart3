@@ -1,0 +1,20 @@
+framework:
+    rate_limiter:
+        limiters:
+            # Limite les tentatives de connexion par IP
+            login_attempts:
+                policy: 'sliding_window'
+                limit: 5
+                interval: '15 minutes'
+                
+            # Limite les tentatives de changement de mot de passe
+            password_change:
+                policy: 'sliding_window'
+                limit: 3
+                interval: '30 minutes'
+                
+            # Limite globale par IP pour éviter les abus
+            global_ip:
+                policy: 'sliding_window'
+                limit: 100
+                interval: '1 hour'
