@@ -21,12 +21,25 @@ class PatientActivationNotificationHandler
     public function __invoke(PatientActivationNotification $message): void
     {
         try {
+            $token = $message->getActivationToken();
+            
+            $this->logger->info('Traitement message d\'activation', [
+                'patient_id' => $message->getPatientId(),
+                'patient_email' => $message->getPatientEmail(),
+                'token_length' => strlen($token),
+                'token_preview' => substr($token, 0, 8) . '...'
+            ]);
+            
             // Générer l'URL d'activation
             $activationUrl = $this->urlGenerator->generate(
                 'patient_activate',
-                ['token' => $message->getActivationToken()],
+                ['token' => $token],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
+
+            $this->logger->info('URL d\'activation générée', [
+                'url' => $activationUrl
+            ]);
 
             // Envoyer l'email d'activation
             $this->emailService->sendPatientActivationEmail(

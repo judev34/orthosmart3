@@ -10,11 +10,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Psr\Log\LoggerInterface;
 
 class PatientActivationController extends AbstractController
 {
     public function __construct(
-        private PatientActivationService $activationService
+        private PatientActivationService $activationService,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -24,9 +26,21 @@ class PatientActivationController extends AbstractController
     #[Route('/patient/activate/{token}', name: 'patient_activate')]
     public function activate(string $token, Request $request, RateLimiterFactory $globalIpLimiter): Response
     {
+        $logger = $this->logger;
+        
+        $logger->info('Accès à la route d\'activation', [
+            'token_length' => strlen($token),
+            'token_preview' => substr($token, 0, 8) . '...',
+            'ip' => $request->getClientIp(),
+            'method' => $request->getMethod()
+        ]);
+        
         // Rate limiting global
         $limiter = $globalIpLimiter->create($request->getClientIp());
         if (!$limiter->consume(1)->isAccepted()) {
+            $logger->warning('Rate limit dépassé pour activation', [
+                'ip' => $request->getClientIp()
+            ]);
             $this->addFlash('error', 'Trop de requêtes. Veuillez réessayer plus tard.');
             return $this->redirectToRoute('app_home');
         }
@@ -35,6 +49,10 @@ class PatientActivationController extends AbstractController
         $activationToken = $this->activationService->validateActivationToken($token);
         
         if (!$activationToken) {
+            $logger->warning('Token d\'activation invalide ou expiré', [
+                'token_preview' => substr($token, 0, 8) . '...',
+                'ip' => $request->getClientIp()
+            ]);
             $this->addFlash('error', 'Ce lien d\'activation est invalide ou a expiré. Contactez votre praticien pour obtenir un nouveau lien.');
             return $this->redirectToRoute('app_home');
         }

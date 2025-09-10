@@ -38,7 +38,7 @@ class Patient implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank(message: 'La date de naissance est obligatoire')]
     private ?\DateTimeInterface $dateNaissance = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $password = null;
 
 

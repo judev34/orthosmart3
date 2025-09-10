@@ -27,22 +27,24 @@ class PractitionerController extends AbstractController
             return $this->redirectToRoute('practitioner_dashboard');
         }
 
-        // Rate limiting par IP
-        $limiter = $loginAttemptsLimiter->create($request->getClientIp());
-        
-        if (!$limiter->consume(1)->isAccepted()) {
-            $this->addFlash('error', 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.');
-            return $this->render('practitioner/login.html.twig', [
-                'last_username' => '',
-                'error' => null,
-                'rate_limited' => true,
-            ]);
-        }
-
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
+
+        // Rate limiting seulement en cas d'erreur de connexion (POST)
+        if ($request->isMethod('POST') && $error) {
+            $limiter = $loginAttemptsLimiter->create($request->getClientIp());
+            
+            if (!$limiter->consume(1)->isAccepted()) {
+                $this->addFlash('error', 'Trop de tentatives de connexion échouées. Veuillez réessayer dans 15 minutes.');
+                return $this->render('practitioner/login.html.twig', [
+                    'last_username' => '',
+                    'error' => null,
+                    'rate_limited' => true,
+                ]);
+            }
+        }
 
         return $this->render('practitioner/login.html.twig', [
             'last_username' => $lastUsername,

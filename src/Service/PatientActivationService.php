@@ -11,6 +11,7 @@ use App\Service\EmailService;
 use App\Service\NotificationService;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class PatientActivationService
 {
@@ -21,6 +22,7 @@ class PatientActivationService
         private NotificationService $notificationService,
         private UrlGeneratorInterface $urlGenerator,
         private LoggerInterface $logger,
+        private UserPasswordHasherInterface $passwordHasher,
         private string $appName = 'OrthoSmart'
     ) {
     }
@@ -67,13 +69,50 @@ class PatientActivationService
      */
     public function validateActivationToken(string $token): ?PatientActivationToken
     {
+        $this->logger->info('Début validation token d\'activation', [
+            'token_length' => strlen($token),
+            'token_preview' => substr($token, 0, 8) . '...'
+        ]);
+        
         $tokenHash = PatientActivationToken::hashToken($token);
+        
+        $this->logger->info('Token hashé pour recherche', [
+            'hash_length' => strlen($tokenHash),
+            'hash_preview' => substr($tokenHash, 0, 16) . '...'
+        ]);
         
         $activationToken = $this->tokenRepository->findValidTokenByHash($tokenHash);
         
-        if (!$activationToken || !$activationToken->isValid()) {
+        if (!$activationToken) {
+            $this->logger->warning('Aucun token trouvé avec ce hash', [
+                'hash_preview' => substr($tokenHash, 0, 16) . '...'
+            ]);
             return null;
         }
+        
+        $this->logger->info('Token trouvé en base', [
+            'token_id' => $activationToken->getId(),
+            'patient_id' => $activationToken->getPatient()->getId(),
+            'expires_at' => $activationToken->getExpiresAt()->format('Y-m-d H:i:s'),
+            'used_at' => $activationToken->getUsedAt()?->format('Y-m-d H:i:s'),
+            'is_valid' => $activationToken->isValid()
+        ]);
+        
+        if (!$activationToken->isValid()) {
+            $this->logger->warning('Token trouvé mais invalide', [
+                'token_id' => $activationToken->getId(),
+                'is_expired' => $activationToken->isExpired(),
+                'is_used' => $activationToken->isUsed(),
+                'expires_at' => $activationToken->getExpiresAt()->format('Y-m-d H:i:s'),
+                'current_time' => (new \DateTimeImmutable())->format('Y-m-d H:i:s')
+            ]);
+            return null;
+        }
+
+        $this->logger->info('Token validé avec succès', [
+            'token_id' => $activationToken->getId(),
+            'patient_id' => $activationToken->getPatient()->getId()
+        ]);
 
         return $activationToken;
     }
@@ -105,8 +144,8 @@ class PatientActivationService
             return false;
         }
 
-        // Activer le patient
-        $hashedPassword = password_hash($newPassword, PASSWORD_ARGON2ID);
+        // Activer le patient avec le système de hachage Symfony
+        $hashedPassword = $this->passwordHasher->hashPassword($patient, $newPassword);
         $patient->setPassword($hashedPassword);
         
         // Marquer le token comme utilisé

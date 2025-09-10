@@ -77,10 +77,11 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/practitioner/login, roles: PUBLIC_ACCESS }
-        - { path: ^/practitioner/register, roles: ROLE_ADMIN }
+        - { path: ^/practitioner/register, roles: PUBLIC_ACCESS } # TODO: ROLE_ADMIN
         - { path: ^/practitioner/dashboard, roles: ROLE_PRACTITIONER }
         - { path: ^/practitioner, roles: ROLE_PRACTITIONER }
         - { path: ^/patient/login, roles: PUBLIC_ACCESS }
+        - { path: ^/patient/activate, roles: PUBLIC_ACCESS }
         - { path: ^/patient/dashboard, roles: ROLE_PATIENT }
         - { path: ^/patient, roles: ROLE_PATIENT }
 
